@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Sojorn palette — see SOJORN_BRAND_GUIDELINES.md §5.3 */
+@theme {
+  --color-paper: #f8f4ec;
+  --color-paper-deep: #efebe3;
+  --color-ink: #1b1b19;
+  --color-forest: #262c1f;
+  --color-olive: #5a5744;
+  --color-olive-light: #756f56;
+  --color-sage: #98a091;
+  --color-stone-light: #dfd7cb;
+  --color-stone: #cfc7b6;
+  --color-terracotta: #94513a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-spectral), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  body {
+    @apply bg-paper font-sans text-olive antialiased;
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  ::selection {
+    @apply bg-olive text-paper;
+  }
 }
