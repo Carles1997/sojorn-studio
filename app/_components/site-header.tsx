@@ -1,95 +1,119 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useId, useState } from "react";
 import { navigation } from "../_content";
-import { ButtonLink } from "./ui";
+import { EASE_OUT, SPRING } from "./motion";
+
+const mobileLinks = [{ href: "/", label: "Inici" }, ...navigation, { href: "/diagnostic", label: "Diagnòstic" }];
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  // The menu remembers which page it was opened on, so any navigation closes it.
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
   const menuId = useId();
+
+  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    const desktop = window.matchMedia("(min-width: 1024px)");
-    const onBreakpoint = () => {
-      if (desktop.matches) setOpen(false);
+      if (event.key === "Escape") setOpenOn(null);
     };
     window.addEventListener("keydown", onKeyDown);
-    desktop.addEventListener("change", onBreakpoint);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      desktop.removeEventListener("change", onBreakpoint);
-    };
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-olive/20 bg-paper">
+    <header style={{ viewTransitionName: "site-header" }} className="sticky top-0 z-30 border-b border-olive/20 bg-paper">
       <div className="mx-auto flex h-18 max-w-[1600px] items-center justify-between gap-6 px-6 md:px-[5vw]">
-        <a href="#inici" className="flex items-baseline gap-3" onClick={() => setOpen(false)}>
+        <Link href="/" className="flex items-baseline gap-3" onClick={() => setOpenOn(null)}>
           <span className="font-serif text-2xl font-light tracking-[0.18em] uppercase">Sojorn</span>
           <span className="hidden text-[11px] tracking-[0.2em] uppercase sm:inline">Studio</span>
-        </a>
+        </Link>
 
-        <nav aria-label="Principal" className="hidden items-center gap-9 text-[11px] tracking-[0.2em] uppercase lg:flex">
-          {navigation.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="relative py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-px after:origin-left after:scale-x-0 after:bg-current after:transition-[scale] after:duration-300 after:ease-editorial hover:after:scale-x-100 hover:after:duration-700 motion-reduce:after:transition-none"
-            >
-              {item.label}
-            </a>
-          ))}
-          <a
-            href="#formulari"
-            data-interest="discover"
-            className="whitespace-nowrap transition-opacity duration-300 hover:opacity-60"
+        <nav aria-label="Principal" className="hidden items-center gap-10 text-[11px] tracking-[0.2em] uppercase lg:flex">
+          {navigation.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className="relative py-2 transition-opacity duration-300 hover:opacity-60"
+              >
+                {item.label}
+                {active && (
+                  <motion.span
+                    layoutId="nav-active"
+                    transition={SPRING}
+                    className="absolute inset-x-0 bottom-0 h-px bg-current"
+                  />
+                )}
+              </Link>
+            );
+          })}
+          <Link
+            href="/diagnostic"
+            aria-current={isActive("/diagnostic") ? "page" : undefined}
+            className="border border-olive px-4 py-2.5 transition-[background-color,color] duration-300 ease-out hover:bg-olive hover:text-paper aria-[current=page]:bg-olive aria-[current=page]:text-paper"
           >
-            [ Diagnòstic ]
-          </a>
+            Diagnòstic
+          </Link>
         </nav>
 
         <button
           type="button"
           aria-expanded={open}
           aria-controls={menuId}
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => setOpenOn(open ? null : pathname)}
           className="py-2 text-[11px] tracking-[0.2em] uppercase transition-transform duration-150 ease-out active:scale-[0.97] lg:hidden"
         >
           {open ? "Tancar" : "Menú"}
         </button>
       </div>
 
-      <div
-        id={menuId}
-        inert={!open}
-        data-open={open}
-        className="absolute inset-x-0 top-full h-[calc(100dvh-4.5rem)] overflow-y-auto bg-paper px-6 pb-10 transition-[opacity,translate] duration-200 ease-editorial data-[open=false]:pointer-events-none data-[open=false]:-translate-y-2 data-[open=false]:opacity-0 data-[open=true]:duration-300 md:px-[5vw] lg:hidden motion-reduce:translate-y-0"
-      >
-        <ul>
-          {navigation.map((item, i) => (
-            <li
-              key={item.href}
-              style={{ transitionDelay: open ? `${60 + i * 40}ms` : "0ms" }}
-              className={`border-b border-olive/20 transition-[opacity,translate] duration-300 ease-editorial motion-reduce:translate-y-0 ${open ? "opacity-100" : "-translate-y-1 opacity-0"}`}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            id={menuId}
+            key="menu"
+            initial={{ opacity: 0, transform: "translateY(-8px)" }}
+            animate={{ opacity: 1, transform: "translateY(0px)", transition: { duration: 0.3, ease: EASE_OUT } }}
+            exit={{ opacity: 0, transition: { duration: 0.18 } }}
+            className="absolute inset-x-0 top-full h-[calc(100dvh-4.5rem)] overflow-y-auto overscroll-contain bg-paper px-6 pb-12 md:px-[5vw] lg:hidden"
+          >
+            <motion.ul
+              initial="hidden"
+              animate="shown"
+              variants={{ shown: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } } }}
             >
-              <a
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className="block py-5 font-serif text-3xl font-light"
-              >
-                {item.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <ButtonLink href="#formulari" data-interest="discover" onClick={() => setOpen(false)} className="mt-8">
-          Sol·licitar un diagnòstic
-        </ButtonLink>
-      </div>
+              {mobileLinks.map((item) => (
+                <motion.li
+                  key={item.href}
+                  variants={{
+                    hidden: { opacity: 0, transform: "translateY(8px)" },
+                    shown: { opacity: 1, transform: "translateY(0px)", transition: { duration: 0.4, ease: EASE_OUT } },
+                  }}
+                  className="border-b border-olive/20"
+                >
+                  <Link
+                    href={item.href}
+                    aria-current={isActive(item.href) ? "page" : undefined}
+                    onClick={() => setOpenOn(null)}
+                    className="block py-5 font-serif text-4xl font-light aria-[current=page]:italic"
+                  >
+                    {item.label}
+                  </Link>
+                </motion.li>
+              ))}
+            </motion.ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

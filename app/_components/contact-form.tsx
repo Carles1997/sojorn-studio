@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { useId, useState, type FormEvent } from "react";
 import { CONTACT_EMAIL, interests } from "../_content";
-import { FillLabel, fillButtonClass } from "./ui";
+import { SubmitButton } from "./button-link";
 
 type Status = "idle" | "sent" | "unconfigured";
 
@@ -37,23 +38,15 @@ function Field({
   );
 }
 
+const validInterest = (value: string | null) =>
+  interests.some((option) => option.value === value) ? (value as string) : "undecided";
+
 // Without a backend, sending means opening the visitor's mail app with the
 // request already written, addressed to CONTACT_EMAIL.
-export function ContactForm() {
-  const [interest, setInterest] = useState("undecided");
+export function ContactForm({ initialInterest = "undecided" }: { initialInterest?: string }) {
+  const [interest, setInterest] = useState(() => validInterest(initialInterest));
   const [status, setStatus] = useState<Status>("idle");
   const messageId = useId();
-
-  // Any link carrying data-interest (a service card, the diagnostic CTAs)
-  // preselects that option on its way down to the form.
-  useEffect(() => {
-    const onClick = (event: MouseEvent) => {
-      const link = (event.target as Element | null)?.closest<HTMLAnchorElement>("a[data-interest]");
-      if (link?.dataset.interest) setInterest(link.dataset.interest);
-    };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -96,7 +89,13 @@ export function ContactForm() {
           autoComplete="email"
           error="Escriu una adreça de correu vàlida."
         />
-        <Field label="Nom de l’allotjament" name="property" required autoComplete="organization" error="Escriu el nom de l’allotjament." />
+        <Field
+          label="Nom de l’allotjament"
+          name="property"
+          required
+          autoComplete="organization"
+          error="Escriu el nom de l’allotjament."
+        />
         <Field label="Població o comarca" name="location" autoComplete="address-level2" />
         <Field label="Telèfon" name="phone" type="tel" autoComplete="tel" />
       </div>
@@ -131,9 +130,7 @@ export function ContactForm() {
       </div>
 
       <div className="flex flex-col items-start gap-6">
-        <button type="submit" className={fillButtonClass("light")}>
-          <FillLabel>Enviar sol·licitud</FillLabel>
-        </button>
+        <SubmitButton>Enviar sol·licitud</SubmitButton>
         <p aria-live="polite" className="max-w-md text-[15px] leading-relaxed font-light">
           {status === "sent" && "Hem obert el teu programa de correu amb la sol·licitud redactada. Només cal que l’enviïs."}
           {status === "unconfigured" &&
@@ -142,4 +139,11 @@ export function ContactForm() {
       </div>
     </form>
   );
+}
+
+// Reads ?nivell= so a tier's "Consultar" link arrives with that tier selected.
+// Rendered inside <Suspense> on the page, with a plain form as the fallback.
+export function ContactFormFromSearchParams() {
+  const searchParams = useSearchParams();
+  return <ContactForm initialInterest={searchParams.get("nivell") ?? undefined} />;
 }

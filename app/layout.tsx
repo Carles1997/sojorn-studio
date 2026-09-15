@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Spectral } from "next/font/google";
+import { MotionProvider } from "./_components/motion";
+import { SiteFooter } from "./_components/site-footer";
+import { SiteHeader } from "./_components/site-header";
 import "./globals.css";
 
 const spectral = Spectral({
@@ -15,7 +18,10 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Sojorn Studio · Transformació d'allotjaments amb encant",
+  title: {
+    default: "Sojorn Studio · Transformació d’allotjaments amb encant",
+    template: "%s · Sojorn Studio",
+  },
   description:
     "Analitzem, transformem i comuniquem allotjaments amb encant perquè siguin més atractius, més rendibles i més connectats amb el territori.",
 };
@@ -23,7 +29,19 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ca" className={`${spectral.variable} ${geistSans.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      <head>
+        {/* Scroll reveals start hidden; without JavaScript, show everything. */}
+        <noscript>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
+      </head>
+      <body className="min-h-full">
+        <MotionProvider>
+          <SiteHeader />
+          {children}
+          <SiteFooter />
+        </MotionProvider>
+      </body>
     </html>
   );
 }

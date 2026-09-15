@@ -1,48 +1,35 @@
-import Image from "next/image";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import Link from "next/link";
+import { ViewTransition, type ComponentProps, type ReactNode } from "react";
 
-type Tone = "light" | "dark";
+export type Tone = "light" | "dark";
 
-// Warm, paper-integrated treatment: the photo multiplies onto the Paper ground,
-// so its whites turn warm. On hover it drifts to 105% over a second and settles
-// back a little faster.
-export function EditorialImage({
-  src,
-  alt,
-  aspect,
-  sizes,
-  eager = false,
-  className = "",
-}: {
-  src: string;
-  alt: string;
-  aspect: string;
-  sizes: string;
-  eager?: boolean;
-  className?: string;
-}) {
+export const container = "mx-auto w-full max-w-[1600px] px-6 md:px-[5vw]";
+export const display = "font-serif font-extralight tracking-[-0.02em] text-balance";
+export const eyebrow = "text-[11px] tracking-[0.2em] uppercase";
+export const body = "text-[17px] leading-relaxed font-light";
+
+// First-paint entrance through @starting-style: no JavaScript, so page heroes
+// never wait for hydration.
+export const enter =
+  "transition-[opacity,translate] duration-1000 ease-editorial starting:translate-y-4 starting:opacity-0 motion-reduce:starting:translate-y-0";
+
+// Wrap each page's content so route changes animate (see globals.css). It lives
+// in every page rather than the layout, because layouts persist and never exit.
+export function PageTransition({ children }: { children: ReactNode }) {
   return (
-    <div className={`group relative isolate overflow-hidden bg-paper ${aspect} ${className}`}>
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        loading={eager ? "eager" : "lazy"}
-        fetchPriority={eager ? "high" : "auto"}
-        className="object-cover mix-blend-multiply contrast-[.95] saturate-[.8] sepia-[.14] transition-[scale] duration-700 ease-editorial group-hover:scale-105 group-hover:duration-1000 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-      />
-    </div>
+    <ViewTransition enter="page" exit="page" default="none">
+      {children}
+    </ViewTransition>
   );
 }
 
 // Text link: a faint resting rule, a full rule that draws in from the left on
-// hover, and an arrow that nudges forward. Press gives a small scale.
-export function TextLink({ children, className = "", ...props }: ComponentPropsWithoutRef<"a">) {
+// hover, and an arrow that nudges forward.
+export function TextLink({ children, className = "", ...props }: ComponentProps<typeof Link>) {
   return (
-    <a
+    <Link
       {...props}
-      className={`group relative inline-flex items-center gap-3 self-start pb-2 text-xs tracking-[0.2em] uppercase transition-transform duration-150 ease-out focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-current active:scale-[0.98] motion-reduce:active:scale-100 ${className}`}
+      className={`group relative inline-flex items-center gap-3 pb-2 text-xs tracking-[0.2em] uppercase transition-transform duration-150 ease-out focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-current active:scale-[0.98] motion-reduce:active:scale-100 ${className}`}
     >
       <span>{children}</span>
       <span
@@ -56,7 +43,7 @@ export function TextLink({ children, className = "", ...props }: ComponentPropsW
         aria-hidden
         className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-current transition-[scale] duration-300 ease-editorial group-hover:scale-x-100 group-hover:duration-700 group-focus-visible:scale-x-100 motion-reduce:transition-none"
       />
-    </a>
+    </Link>
   );
 }
 
@@ -66,7 +53,7 @@ const toneClasses: Record<Tone, { frame: string; fill: string }> = {
 };
 
 export function fillButtonClass(tone: Tone = "light") {
-  return `group relative inline-flex items-center justify-center overflow-hidden border px-6 py-4 text-xs tracking-[0.16em] whitespace-nowrap uppercase transition-transform duration-150 ease-out focus-visible:outline-1 focus-visible:outline-offset-4 active:scale-[0.97] motion-reduce:active:scale-100 sm:px-8 sm:tracking-[0.2em] ${toneClasses[tone].frame}`;
+  return `group relative inline-flex items-center justify-center overflow-hidden border px-6 py-4 text-xs tracking-[0.16em] whitespace-nowrap uppercase focus-visible:outline-1 focus-visible:outline-offset-4 sm:px-8 sm:tracking-[0.2em] ${toneClasses[tone].frame}`;
 }
 
 // The filled state is a second copy of the label, clipped away to the right.
@@ -83,18 +70,5 @@ export function FillLabel({ children, tone = "light" }: { children: ReactNode; t
         {children}
       </span>
     </>
-  );
-}
-
-export function ButtonLink({
-  tone = "light",
-  className = "",
-  children,
-  ...props
-}: ComponentPropsWithoutRef<"a"> & { tone?: Tone }) {
-  return (
-    <a {...props} className={`${fillButtonClass(tone)} ${className}`}>
-      <FillLabel tone={tone}>{children}</FillLabel>
-    </a>
   );
 }

@@ -4,12 +4,13 @@
 @theme {
   --color-paper: #f8f4ec;
   --color-paper-deep: #efebe3;
+  --color-sand: #dfd7cb;
   --color-ink: #1b1b19;
   --color-forest: #262c1f;
+  --color-moss: #2c3028;
   --color-olive: #5a5744;
   --color-olive-light: #756f56;
   --color-sage: #98a091;
-  --color-stone-light: #dfd7cb;
   --color-stone: #cfc7b6;
   --color-terracotta: #94513a;
 
@@ -24,8 +25,8 @@
 
 @layer base {
   html {
-    /* Keeps anchored sections clear of the sticky header. */
-    scroll-padding-top: 5rem;
+    /* Keeps in-page anchors clear of the sticky header. */
+    scroll-padding-top: 6rem;
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -44,27 +45,56 @@
 }
 
 /*
- * Scroll reveal. Elements marked [data-reveal] only start hidden once
- * ScrollReveal has armed the page, so without JavaScript everything is visible.
- * The stagger delay is set per element by the observer.
+ * Route transitions (React <ViewTransition>, see PageTransition in _components/ui.tsx).
+ * The old page leaves quickly so it never competes with the new one, which
+ * rises in more gently. The header is anchored so only the content moves.
  */
-.reveal-armed [data-reveal] {
-  transition:
-    opacity 1000ms var(--ease-editorial),
-    translate 1000ms var(--ease-editorial);
+::view-transition {
+  pointer-events: none;
 }
 
-.reveal-armed [data-reveal]:not([data-revealed]) {
-  opacity: 0;
-  translate: 0 1rem;
+::view-transition-old(.page) {
+  animation: 160ms ease-out both page-fade-out;
+}
+
+::view-transition-new(.page) {
+  animation: 560ms var(--ease-editorial) 120ms both page-rise-in;
+}
+
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(site-header) {
+  display: none;
+}
+
+::view-transition-new(site-header) {
+  animation: none;
+}
+
+@keyframes page-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal-armed [data-reveal] {
-    transition: opacity 600ms ease;
-  }
-
-  .reveal-armed [data-reveal]:not([data-revealed]) {
-    translate: none;
+  ::view-transition-new(.page) {
+    animation: 240ms ease both page-fade-in;
   }
 }

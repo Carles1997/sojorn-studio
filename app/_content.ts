@@ -1,12 +1,14 @@
-// All visible copy for the home page, taken from CONTENT_STRATEGY.md.
+// All visible copy for the site, taken from CONTENT_STRATEGY.md.
 
-// Address that receives the contact form requests. While it stays empty the
+// Address that receives the diagnostic requests. While it stays empty the
 // form validates and explains itself, but nothing is sent.
 export const CONTACT_EMAIL: string = "";
 
 // Placeholder photography from Unsplash until the real shoots arrive.
 const photo = (id: string, width: number) =>
   `https://images.unsplash.com/photo-${id}?q=80&w=${width}&auto=format&fit=crop`;
+
+export type Photo = { src: string; alt: string };
 
 export const images = {
   hero: {
@@ -17,16 +19,8 @@ export const images = {
     src: photo("1785529018344-d2661d6b5511", 1600),
     alt: "Casa de pedra amb teulada de teula sobre una cala",
   },
-  method: {
-    src: photo("1788927783390-326c75c0265e", 1600),
-    alt: "Habitació assolellada amb un llit de dia, mobles de fusta i una gran finestra",
-  },
-  potential: {
-    src: photo("1758972574715-bcb23a467697", 2400),
-    alt: "Un arc de pedra obre la vista a una casa mediterrània vora el mar",
-  },
   before: {
-    src: photo("1631049307264-da0ec9d70304", 1200),
+    src: photo("1631049307264-da0ec9d70304", 2000),
     alt: "Habitació d’hotel convencional amb un llit doble",
   },
   opportunity: {
@@ -34,20 +28,56 @@ export const images = {
     alt: "Fileres de vinya amb el sol baix",
   },
   after: {
-    src: photo("1738315452605-f3ff2d162631", 1200),
+    src: photo("1738315452605-f3ff2d162631", 2000),
     alt: "Sala d’estar amb bigues de fusta i llum natural",
   },
   closing: {
     src: photo("1775137014196-c96d4eecaceb", 2400),
     alt: "Paisatge de vinyes i turons al capvespre",
   },
-};
+  territory: {
+    src: photo("1780628816901-2b17292cbb77", 1600),
+    alt: "Camí entre l’herba i un arbre, amb vistes al mar",
+  },
+  produce: {
+    src: photo("1630009939650-3e4210bbf10a", 1200),
+    alt: "Cebes vermelles en un bol de ceràmica",
+  },
+  cellar: {
+    src: photo("1783443799503-e1587f423bd0", 2400),
+    alt: "Celler amb voltes de maó i fileres de bótes",
+  },
+  terrace: {
+    src: photo("1653228410470-9915c4cfca67", 2000),
+    alt: "Taula i cadires en una terrassa amb vistes a les vinyes",
+  },
+  table: {
+    src: photo("1785603103953-471d9149f30e", 1200),
+    alt: "Una persona asseguda a taula davant de muntanyes verdes",
+  },
+  village: {
+    src: photo("1783353954295-de0d5ba42923", 2400),
+    alt: "Campanar de pedra en un carrer estret de poble",
+  },
+  studio: {
+    src: photo("1758659708467-102e368436f0", 1600),
+    alt: "Taula sota un arbre de tardor amb vistes a les muntanyes",
+  },
+  diagnostic: {
+    src: photo("1694150314864-714ae37a4d14", 1600),
+    alt: "Taules de fusta sota un arbre",
+  },
+  walker: {
+    src: photo("1764955949954-9024cbf6bd36", 1600),
+    alt: "Una persona caminant per un sender vora el mar",
+  },
+} satisfies Record<string, Photo>;
 
 export const navigation = [
-  { href: "#que-fem", label: "Què fem" },
-  { href: "#serveis", label: "Serveis" },
-  { href: "#metode", label: "Mètode" },
-  { href: "#projectes", label: "Projectes" },
+  { href: "/serveis", label: "Serveis" },
+  { href: "/metode", label: "Mètode" },
+  { href: "/projectes", label: "Projectes" },
+  { href: "/estudi", label: "Estudi" },
 ];
 
 export const assets = [
@@ -133,10 +163,6 @@ export const areas: Area[] = [
         ],
       },
     ],
-    note: {
-      title: "No cal reformar-ho tot.",
-      text: "Transformació per fases: prioritzem les intervencions que poden generar més impacte amb la menor inversió necessària.",
-    },
   },
   {
     index: "03",
@@ -307,12 +333,16 @@ export const services = [
   },
 ];
 
+export type Service = (typeof services)[number];
+
 export const interests = [
   ...services.map((service) => ({ value: service.value, label: service.name })),
   { value: "undecided", label: "Encara no ho sé" },
 ];
 
-export const methodSteps = [
+export type MethodStep = { index: string; title: string; text: string; formula?: string };
+
+export const methodSteps: MethodStep[] = [
   {
     index: "01",
     title: "Descobrim",
@@ -321,7 +351,8 @@ export const methodSteps = [
   {
     index: "02",
     title: "Analitzem",
-    text: "Estudiem l’espai, el client, la competència, el territori, la marca i la comunicació. I detectem oportunitats.",
+    text: "Estudiem cada peça de l’allotjament i del seu entorn. I detectem oportunitats.",
+    formula: "Espai + client + competència + territori + marca + comunicació",
   },
   {
     index: "03",
@@ -346,36 +377,55 @@ export const methodSteps = [
 ];
 
 export const potential = [
-  "Un punt de partida per descobrir el territori.",
-  "Un lloc per menjar producte local.",
-  "Una porta al món del vi.",
-  "Una escapada de cap de setmana.",
-  "Una experiència.",
-  "Una destinació.",
+  { line: "Un punt de partida per descobrir el territori.", image: images.territory },
+  { line: "Un lloc per menjar producte local.", image: images.produce },
+  { line: "Una porta al món del vi.", image: images.cellar },
+  { line: "Una escapada de cap de setmana.", image: images.terrace },
+  { line: "Una experiència.", image: images.table },
+  { line: "Una destinació.", image: images.village },
+];
+
+export const caseStructure = [
+  { index: "01", title: "El repte", text: "Què estava passant." },
+  { index: "02", title: "El potencial", text: "Què vam detectar." },
+  { index: "03", title: "La transformació", text: "Què vam proposar." },
+  { index: "04", title: "El resultat", text: "Què va canviar." },
 ];
 
 export const projectStages = [
   {
     stage: "Abans",
-    label: "El repte",
     image: images.before,
     quote: "Habitació doble amb esmorzar.",
     text: "Un hotel que té molt a oferir, però una web que només explica on dormir.",
   },
   {
     stage: "Oportunitat",
-    label: "El potencial",
     image: images.opportunity,
     quote: "Vinyes, cellers i pobles de pedra.",
     text: "Una ubicació perfecta per fer rutes, però sense cap proposta per al client.",
   },
   {
     stage: "Després",
-    label: "La transformació",
     image: images.after,
     quote: "48 hores per descobrir el Priorat.",
     text: "Dormir entre vinyes, visitar un celler, descobrir un poble de pedra i acabar el dia amb un sopar de producte local.",
   },
 ];
+
+export const manifest = [
+  "Catalunya està plena de llocs extraordinaris. Masies amb història. Hotels entre vinyes. Cases davant del mar. Petits refugis a la muntanya. Restaurants amb producte local. Camins, pobles, paisatges i històries.",
+  "Però tenir-ho no sempre és suficient. Cal saber veure-ho. Cal saber donar-li forma. I, sobretot, cal saber explicar-ho.",
+  "Per això no comencem preguntant-nos què podem reformar. Comencem preguntant-nos què pot arribar a ser aquest lloc.",
+  "Perquè l’hotel no és només l’edifici. És el que passa quan obres la porta. El que menges. El que descobreixes. El que recordes. El que expliques quan tornes a casa.",
+];
+
+export const notUs = [
+  "Una empresa de reformes d’hotels.",
+  "Una agència de màrqueting per a hotels.",
+  "Un estudi d’interiorisme.",
+];
+
+export const pillars = ["Estratègia", "Espais", "Experiències", "Marca"];
 
 export const disciplines = ["estratègia", "arquitectura", "interiorisme", "territori", "marca", "comunicació"];
