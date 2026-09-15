@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Sojorn palette — see SOJORN_BRAND_GUIDELINES.md §5.3 */
+/* Sojorn palette: see SOJORN_BRAND_GUIDELINES.md §5.3 */
 @theme {
   --color-paper: #f8f4ec;
   --color-paper-deep: #efebe3;
@@ -12,6 +12,9 @@
   --color-stone-light: #dfd7cb;
   --color-stone: #cfc7b6;
   --color-terracotta: #94513a;
+
+  /* Strong ease-out: movement starts immediately and settles slowly. */
+  --ease-editorial: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
@@ -20,11 +23,48 @@
 }
 
 @layer base {
+  html {
+    /* Keeps anchored sections clear of the sticky header. */
+    scroll-padding-top: 5rem;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   body {
     @apply bg-paper font-sans text-olive antialiased;
   }
 
   ::selection {
     @apply bg-olive text-paper;
+  }
+}
+
+/*
+ * Scroll reveal. Elements marked [data-reveal] only start hidden once
+ * ScrollReveal has armed the page, so without JavaScript everything is visible.
+ * The stagger delay is set per element by the observer.
+ */
+.reveal-armed [data-reveal] {
+  transition:
+    opacity 1000ms var(--ease-editorial),
+    translate 1000ms var(--ease-editorial);
+}
+
+.reveal-armed [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  translate: 0 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-armed [data-reveal] {
+    transition: opacity 600ms ease;
+  }
+
+  .reveal-armed [data-reveal]:not([data-revealed]) {
+    translate: none;
   }
 }
